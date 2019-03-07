@@ -42,25 +42,6 @@ namespace controller
   void Controller::desiredStateCallback(const reef_msgs::DesiredState& msg)
   {
     desired_state_ = msg;
-//    desired_state_.acceleration_valid = false;
-//    desired_state_.pose.z = msg.pose.z;
-//
-//    if(xy_control_flag)
-//    {
-//      desired_state_.position_valid = false;
-//      desired_state_.velocity_valid = true;
-//      desired_state_.velocity.x = msg.velocity.x;
-//      desired_state_.velocity.y = msg.velocity.y;
-//      desired_state_.velocity.yaw = msg.velocity.yaw;
-//    }
-//    else
-//    {
-//      desired_state_.position_valid = true;
-//      desired_state_.velocity_valid = false;
-//      desired_state_.pose.x = 0;
-//      desired_state_.pose.y = 0;
-//      desired_state_.pose.yaw = hover_yaw_;
-//    }
   }
 
   void Controller::currentStateCallback(const reef_msgs::XYZEstimate& msg)
