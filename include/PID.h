@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <dynamic_reconfigure/server.h>
-#include <position_controller/GainsConfig.h>
+#include <reef_control/GainsConfig.h>
 #include <simple_pid.h>
 #include <math.h>
 #include <algorithm>
