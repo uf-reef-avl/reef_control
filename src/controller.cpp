@@ -1,29 +1,24 @@
 #include <ros/ros.h>
 #include "controller.h"
 
-namespace controller
+namespace reef_control
 {
   Controller::Controller() :
     nh_(),
     nh_private_("~"),
     armed_(false),
     initialized_(false),
-    is_flying_(false),
-    xy_control_flag(false)
+    is_flying_(false)
   {
 
     // Get Global Parameters
     nh_.param<double>("gravity", gravity_, 9.80665);
     nh_.param<double>("hover_yaw", hover_yaw_, -90*M_PI/180);
 
-    // get robot parameters
-    std::string robot_namespace;
-    nh_private_.param<std::string>("robot_namespace", robot_namespace, ros::this_node::getNamespace());
-    ros::NodeHandle robot_nh(robot_namespace.c_str());
-    ROS_ASSERT_MSG(robot_nh.getParam("pose_controller/max_roll", max_roll_), "[rotor_controller] - missing parameters in %s namespace", robot_namespace.c_str());
-    ROS_ASSERT(robot_nh.getParam("pose_controller/max_pitch", max_pitch_));
-    ROS_ASSERT(robot_nh.getParam("pose_controller/max_yaw_rate", max_yaw_rate_));
-    ROS_ASSERT(robot_nh.getParam("pose_controller/hover_throttle", hover_throttle_));
+    ROS_ASSERT_MSG(nh_private_.getParam("max_roll", max_roll_), "[rotor_controller] - missing parameters");
+    ROS_ASSERT(nh_private_.getParam("max_pitch", max_pitch_));
+    ROS_ASSERT(nh_private_.getParam("max_yaw_rate", max_yaw_rate_));
+    ROS_ASSERT(nh_private_.getParam("hover_throttle", hover_throttle_));
     ROS_ERROR("hover_throttle = %f", hover_throttle_);
 
     command_publisher_       = nh_.advertise<rosflight_msgs::Command>("command", 1);
@@ -76,16 +71,7 @@ namespace controller
 
   void Controller::RCInCallback(const rosflight_msgs::RCRaw &msg)
   {
-    if(msg.values[6] > 1500)
-    {
-      ROS_WARN_ONCE("ENABLED XY CONTROL!!! ");
-      xy_control_flag = 1;
-    }
-    else
-    {
-      ROS_WARN_ONCE("ENABLED Z CONTROL ONLY!!! ");
-      xy_control_flag = 0;
-    }
+
   }
 
   void Controller::computeCommand()

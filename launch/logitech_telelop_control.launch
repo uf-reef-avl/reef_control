@@ -4,8 +4,6 @@
     <arg name="run_estimator" default="true"/>
     <arg name="control_mode" value="velocity_altitude"/>
 
-    <rosparam command="load" file="$(find reef_estimator)/params/dodo_camera.yaml" />
-
     <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
         <param name="port" value="/dev/ttyUSB0"/>
     </node>
@@ -23,7 +21,7 @@
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
-
+    <rosparam command="load" file="$(find reef_estimator)/params/dodo_camera.yaml" />
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
         <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
         <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
@@ -36,7 +34,7 @@
             enable_partial_update: true
             enable_mocap_switch: false
             mahalanobis_d_sonar: 20
-            mahalanobis_d_rgbd_velocity: 80
+            mahalanobis_d_rgbd_velocity: 20
             mahalanobis_d_mocap_z: 20
             mahalanobis_d_mocap_velocity: 20
         </rosparam>
@@ -53,9 +51,6 @@
         <rosparam command="load" file="$(find position_to_velocity)/params/basic.yaml" />
     </node>
 
-    <node name="reef_controller" pkg="reef_control" type="reef_control_node" output="screen">
-        <rosparam file="$(find reef_controller)/params/$(arg vehicle)_pid.yaml" />
-    </node>
-
-
+    <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml" />
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
 </launch>

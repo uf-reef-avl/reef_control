@@ -1,6 +1,6 @@
 #include "simple_pid.h"
 
-namespace pose_controller
+namespace reef_control
 {
 
 //

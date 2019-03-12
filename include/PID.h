@@ -10,7 +10,7 @@
 #include <reef_msgs/dynamics.h>
 #include "controller.h"
 
-namespace controller
+namespace reef_control
 {
   class PIDController : public Controller
   {
@@ -18,12 +18,12 @@ namespace controller
     PIDController();
 
   private:
-    pose_controller::SimplePID d_; //simple pid object for Down
-    pose_controller::SimplePID yaw_; //simple pid object for Yaw
-    pose_controller::SimplePID u_; //simple pid object for velocity
-    pose_controller::SimplePID v_; //simple pid object for velocity
-    pose_controller::SimplePID w_; //simple pid object for velocity
-    pose_controller::SimplePID r_; //simple pid object for Yaw rate
+    reef_control::SimplePID d_; //simple pid object for Down
+    reef_control::SimplePID yaw_; //simple pid object for Yaw
+    reef_control::SimplePID u_; //simple pid object for velocity
+    reef_control::SimplePID v_; //simple pid object for velocity
+    reef_control::SimplePID w_; //simple pid object for velocity
+    reef_control::SimplePID r_; //simple pid object for Yaw rate
 
     double threshold_;
     double speed_;
@@ -43,10 +43,10 @@ namespace controller
 
     ros::Publisher desired_state_pub_;
 
-    dynamic_reconfigure::Server<position_controller::GainsConfig> server_;
-    dynamic_reconfigure::Server<position_controller::GainsConfig>::CallbackType func_;
+    dynamic_reconfigure::Server<reef_control::GainsConfig> server_;
+    dynamic_reconfigure::Server<reef_control::GainsConfig>::CallbackType func_;
 
-    void gainsCallback(position_controller::GainsConfig &config, uint32_t level);
+    void gainsCallback(reef_control::GainsConfig &config, uint32_t level);
 
     void lookupTable(reef_msgs::DesiredState& desired_state ,const nav_msgs::Odometry& current_state);
 

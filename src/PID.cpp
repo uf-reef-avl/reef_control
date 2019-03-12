@@ -2,7 +2,7 @@
 #include "controller.h"
 #include "PID.h"
 
-namespace controller
+namespace reef_control
 {
   PIDController::PIDController() : Controller()
   {
@@ -13,7 +13,7 @@ namespace controller
     nh_.param<bool>("fly_fixed_wing",fly_fixed_wing_, false);
   }
 
-  void PIDController::gainsCallback(position_controller::GainsConfig &config, uint32_t level)
+  void PIDController::gainsCallback(reef_control::GainsConfig &config, uint32_t level)
   {
     double xIntegrator = config.xIntegrator?1.0:0.0;
     double uIntegrator = config.uIntegrator?1.0:0.0;

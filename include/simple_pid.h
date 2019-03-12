@@ -10,7 +10,7 @@
 #include <cmath>
 #include <ros/ros.h> // included temporarily for debug statements
 
-namespace pose_controller
+namespace reef_control
 {
 
 /*!

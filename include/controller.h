@@ -19,7 +19,7 @@
 #include <simple_pid.h>
 
 
-namespace controller
+namespace reef_control
 {
   class Controller
   {
