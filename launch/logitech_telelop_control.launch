@@ -3,6 +3,8 @@
     <arg name="vehicle" default="dodo"/>
     <arg name="run_estimator" default="true"/>
     <arg name="control_mode" value="velocity_altitude"/>
+    <arg name="record_bag" default="true"/>
+    <arg name="bag_name" default="test"/>
 
     <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
         <param name="port" value="/dev/ttyUSB0"/>
@@ -36,7 +38,7 @@
             mahalanobis_d_sonar: 20
             mahalanobis_d_rgbd_velocity: 20
             mahalanobis_d_mocap_z: 20
-            mahalanobis_d_mocap_velocity: 20
+            mahalanobis_d_mocap_velocity: 80
         </rosparam>
         <remap from="mocap_ned" to="pose_stamped"/>
         <remap from="mocap_velocity/body_level_frame" to="velocity/body_level_frame"/>
@@ -53,4 +55,6 @@
 
     <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml" />
     <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
+
+  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state"/>
 </launch>

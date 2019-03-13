@@ -8,7 +8,7 @@ namespace reef_control
   {
     func_ = boost::bind(&PIDController::gainsCallback,this,_1,_2);
     server_.setCallback(func_);
-    desired_state_pub_ = nh_.advertise<reef_msgs::DesiredState>("desired_state", 1);
+    desired_state_pub_ = nh_.advertise<reef_msgs::DesiredState>("controller_state", 1);
     nh_.param<bool>("face_target",face_target_, false);
     nh_.param<bool>("fly_fixed_wing",fly_fixed_wing_, false);
   }
