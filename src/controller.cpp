@@ -13,7 +13,6 @@ namespace reef_control
 
     // Get Global Parameters
     nh_.param<double>("gravity", gravity_, 9.80665);
-    nh_.param<double>("hover_yaw", hover_yaw_, -90*M_PI/180);
 
     ROS_ASSERT_MSG(nh_private_.getParam("max_roll", max_roll_), "[rotor_controller] - missing parameters");
     ROS_ASSERT(nh_private_.getParam("max_pitch", max_pitch_));
@@ -111,6 +110,11 @@ namespace reef_control
       command.y = std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_);
       command.z = std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_);
     }
+<<<<<<< HEAD
+=======
+    else if(desired_state_.altitude_only)
+      command.ignore = 0x07;
+>>>>>>> 72e79695ee5633b45b8a922c31751553718ca47f
     else
     {
       command.x = desired_state_.attitude.x;

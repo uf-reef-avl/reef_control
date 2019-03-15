@@ -56,7 +56,6 @@ namespace reef_control
     double max_roll_, max_pitch_, max_yaw_rate_;
     double max_thrust_, min_thrust_;
     double hover_throttle_;
-    double hover_yaw_;
     double max_u_, max_v_, max_w_;
     double dt;
     double total_accel;
