@@ -110,11 +110,8 @@ namespace reef_control
       command.y = std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_);
       command.z = std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_);
     }
-<<<<<<< HEAD
-=======
     else if(desired_state_.altitude_only)
       command.ignore = 0x07;
->>>>>>> 72e79695ee5633b45b8a922c31751553718ca47f
     else
     {
       command.x = desired_state_.attitude.x;

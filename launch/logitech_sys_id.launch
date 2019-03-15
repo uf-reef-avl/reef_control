@@ -18,8 +18,8 @@
 
         <arg name="invert_x" value="true"/>
 
-        <arg name="x_dot_max" default="2.0"/>
-        <arg name="y_dot_max" default="2.0"/>
+        <arg name="pitch_max" default="0.25"/>
+        <arg name="roll_max" default="0.25"/>
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
