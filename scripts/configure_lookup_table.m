@@ -8,7 +8,7 @@ start_pose = [-3;-3];
 end_pose = [3;3];
 traj = [start_pose(1):0.1:end_pose(1); start_pose(2):0.1:end_pose(2)];
 
-deadzone = 0.1;
+deadzone = 0.5;
 vel_max = 1.5;
 kp = 0.8;
 x_0 = 1;
