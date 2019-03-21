@@ -1,193 +1,117 @@
-# REEF Controller
-The REEF Controller package contains a set of simple PID controllers designed to enable attitude, velocity, and position control while integrating nicely with feedback from motion capture and the REEF Estimator node.
+# REEF Control
+The REEF Control package contains a set of simple cascading PID controllers designed to enable attitude, velocity, and position control. The package was originally intended for implemention of a PID controller using the REEF Estimator but can be easily integrated with other estimators and other controllers. 
 
+
+Another feature of this package is that it enables the user to tune the gains of the PID controller dynamically.  
+**All components are expressed in the NED frame since ROSFlight expects the attitude command in that frame**
 ## Prerequisites
-Requires [ROS Kinetic](http://wiki.ros.org/kinetic/Installation)  and [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) to be installed. For REEF Estimator feedback, [REEF Estimator](http://192.168.1.101/AVL-Summer-18/reef_estimator) should be installed. For REEF Teleop control, [REEF Teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop) should be installed.
+Requires [ROS Kinetic](http://wiki.ros.org/kinetic/Installation), [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) and the [REEF_msgs](http://192.168.1.101/AVL-Summer-18/reef_msgs) package to be installed. For REEF Estimator feedback, [REEF Estimator](http://192.168.1.101/AVL-Summer-18/reef_estimator) should be installed. For REEF Teleop control, [REEF Teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop) should be installed.
+Additionally, the package depends on the [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) package.
+## Backgroud
+The REEF Estimator was designed only to function as a controller i.e take in desired position, velocity or attitude and convert them to commanded attitude expected by the ROSFlight module. This node will not decide the mode of operation, it expects the desired_state message to convey that to the controller. So for this node to work, there needs to be a higher level node that publishes the desired state (eg. [reef_teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop), [dubins_path](http://192.168.1.101/AVL-Summer-18/dubins_path) or [setpoint_generator](https://github.com/uncc-visionlab/setpoint_publisher)  )
+
+The desired_state message supports position command, velocity commands, attitude commands and a altitude hold mode which can be controlled by the relevant switches in the message. The package does **NOT** use a PID loop for the position control, but rather uses a lookup table. From prior experience, we have always liked having the altitude (Z and Z_dot) controller running in all modes, so these two controllers will always function in ALL modes. 
+
+### Lookup Table Control
+In a cascading PID loop, the position command is converted to a velocity command which is then further converted to a attitude command. Since position and velocity commands have a "simple" and "intutive" relationship ie if the desired position is to the left of the vehicle, the body frame velocity also have to point to the right. So, a lookup table is preferred in comparision to a PID loop. The control law is extremely simple: Unless you are within a certain threshold distance from the desired position a constant velocity is applied. If you are within the threshold, the velocity is gradually decreased (the decrease is modelled like a sigmoid function). 
+The equation is given by:
+![Velocity Request](./docs/Sigmoid_Equation.png) 
+
+The figure below is a plot of the velocity request as a function of time 
+![Velocity Request Plot](./docs/velocity_request.jpg). 
+
+The characteristics of the curve can be altered using the *deadzone*,*kp*,*center_point*,*alpha* and *max_velocity* parameters. A [MATLAB script](./scripts/configure_lookup_table.m) can be used to visualize the commands prior to actual implementation.
 
 ## Installation
 Simply clone **reef_controller** to the catkin workspace src directory and compile it to make sure everything works.
 ```
+sudo apt-get install ros-kinetic-dynamic-reconfigure
 cd catkin_ws/src
 git clone http://192.168.1.101/AVL-Summer-18/reef_controller
 cd ../ && catkin_make
 ```
 ## Usage
+
+### REEF Control node:
+The reef control node subscribes the following topics:
+ * /desired_state [reef_msgs/DesiredState]* - Contains the desired states for the controller
+ * /is_flying [std_msgs/Bool]* - Tells if the quad is flying. Helps set the *initialized* flag
+ * /pose_stamped [geometry_msgs/PoseStamped] - Position estimates (ideally from a motion capture system)
+ * /rc_raw [rosflight_msgs/RCRaw] - RC Messages, used to switch between modes.
+ * /status [rosflight_msgs/Status]* - Status of flight controller to tell if the vehicle is armed
+ * /xyz_estimate [reef_msgs/XYZEstimate]* - Estimates used to get Z and XY Velocity estimates
+ 
+ *Requred topics. All others are optional.
+The node publishes the following messages:
+* /command [rosflight_msgs/Command] - Desired attitude commands
+* /controller_state [reef_msgs/DesiredState] - Internal results of the PID loops
+
+There are two other topics from the dynamic reconfigure package which are not relevant. 
+
+### ROS Launch Usage
 REEF Controller is designed to be executed from a launchfile. **reef_controller** should be the name of the node, the package, and the type. For example,
 ```xml
 <node name="reef_controller" pkg="reef_controller" type="reef_controller" output="screen"/>
 ```
-For useful operation, however, several parameters should be provided, including PID gains and control modes. Before configuring a launchfile node, familiarize oneself with the parameters in the following section.
-
-### Parameters
-The internal PID controllers can be tuned by setting the gain and output clamp values in **reef_controller/params/pid.yaml**:
+In order to launch this node you MUST also load a the max_roll, max_pitch, max_yaw_rate and hover_throttle parameters. **The node will not run unless these parameters are loaded.** Apart from these parameters, for the PID loop the work, the gains which are also loaded through a YAML file is needed.
+## Parameters
+The internal PID controllers can be tuned by setting the gain and output clamp values in **reef_controller/params/$(vehicle)_pid.yaml**. An example YAML file looks like the following:
 ```xml
-yaw_pid_gains: {
-    p_gain_: 0.75,
-    i_gain_: 0.2,
-    d_gain_: 0.0,
-    i_min_: -0.2,
-    i_max_: 0.2,
-    antiwindup_: true,
-    output_min_: -0.785,
-    output_max_: 0.785
-}
+reef_control_pid: {
+    kp: 0.8, deadzone: 0.1, max_vel: 1.5, #params for sigmoid
+    center_point: 1.0, alpha: 0.4, #params for sigmoid
+    uP: 0.9, uI: 0.01, uD: 0.02, #body_frame x velocity
+    vP: 0.7, vI: 0.01, vD: 0.02, #body_frame y velocity
+    wP: 1.0, wI: 0.1, wD: 0.0, uvtau: 0.15, #body_frame z velocity
+    dP: 1.8, dI: 0.1, dD: 0.0, nedtau: 0.15, #body_frame z
+    yawP: 1.08, yawI: 0.08, yawD: 0.01, yawtau: 0.15, #yaw
+    xIntegrator: 1,
+    uIntegrator: 1,
+    hover_throttle: 0.57,
 
-x_pid_gains: {
-    p_gain_: 0.6,
-    i_gain_: 0.1,
-    d_gain_: 0.0,
-    i_min_: -0.25,
-    i_max_: 0.25,
-    antiwindup_: true,
-    output_min_: -1.0,
-    output_max_: 1.0
-}
+    max_roll: 0.25,
+    max_pitch: 0.25,
+    max_yaw_rate: 2.0,
+    max_u: 1.0,
+    max_v: 1.0,
+    max_w: 1.0,
+    max_d: 1.0,
 
-y_pid_gains: {
-    p_gain_: 0.6,
-    i_gain_: 0.1,
-    d_gain_: 0.0,
-    i_min_: -0.25,
-    i_max_: 0.25,
-    antiwindup_: true,
-    output_min_: -1.0,
-    output_max_: 1.0
+    face_target: false,
+    fly_fixed_wing: false
 }
-
-z_pid_gains: {
-    p_gain_: 0.75,
-    i_gain_: 0.05,
-    d_gain_: 0.0,
-    i_min_: -0.25,
-    i_max_: 0.25,
-    antiwindup_: true,
-    output_min_: -1.0,
-    output_max_: 1.0
-}
-
-#X velocity input, pitch output
-xdot_pid_gains: {
-    p_gain_: 0.3,
-    i_gain_: 0.025,
-    d_gain_: 0.0,
-    i_min_: -0.2,
-    i_max_: 0.2,
-    antiwindup_: true,
-    output_min_: -0.3,
-    output_max_: 0.3
-}
-
-#Y velocity input, roll output
-ydot_pid_gains: {
-    p_gain_: 0.3,
-    i_gain_: 0.025,
-    d_gain_: 0.0,
-    i_min_: -0.2,
-    i_max_: 0.2,
-    antiwindup_: true,
-    output_min_: -0.3,
-    output_max_: 0.3
-}
-
-#Z velocity input, thrust output
-zdot_pid_gains: {
-    p_gain_: 0.6,
-    i_gain_: 0.2,
-    d_gain_: 0.0,
-    i_min_: -0.6,
-    i_max_: 0.6,
-    antiwindup_: true,
-    output_min_: 0.1,
-    output_max_: 0.75
-}
-
 ```
 
-**Other parameters:**
+As explained in the [lookup table](###Lookup Table Control) section the parameters on the first two lines help characterize the sigmoid function.
+The u(PID), v(PID), w(PID), d(PID) and yaw(PID) are the PID gains for the body frame x,y,z velocities, altitude and yaw respectively.
+*hover_throttle* is the percentage thrust required to keep the vehicle in a stable hover. The max parameters are set subsequently. 
 
-|Name|Type|Description|Default|
-|--|--|--|--|
-|**control_mode**|std::string|Controller control mode setting|"attitude_altitude"|
-|**enable_xy_position_controller**|bool|Enable X/Y position control override|false|
-|**position_override_channel**|int|RC channel mapped to position control override|6|
-|**mocap_pose_topic**|std::string|Motion capture pose topic name|mocap_ned|
-|**initial_yaw_cmd**|double|Initial yaw angle for override mode|Pi|
-|**initial_x_cmd**|double|Initial X position for override mode|0|
-|**initial_y_cmd**|double|Initial Y position for override mode|0|
-|**initial_z_cmd**|double|Initial altitude|0|
+*face_target* parameter is used to decide if you want the vehicle heading to face the next waypoint, *fly_fixed_wing* is used make a multirotor platform "fly like a fixed wing vehicle" i.e, instead of a hover and yaw, there will be a slight forward velocity as it yaws.
 
+## Dynamic Tuning
+Dynamic tuning has been used in our lab inorder to tune the PID gains while the vehicle is in flight. When using this, please exercise caution as drastic changes to certain gains can lead to crashes. 
 
-### Control Modes
- - **Attitude + Altitude**
-Controls based on pitch and roll attitude, yawrate, and altitude setpoints. To enable this mode, set the **control_mode** parameter to "attitude_altitude".
+The dynamic tuning uses the yaml parameters as the default values. Hence the gains are launched using a namespace which is the SAME as the name of the node (refer to launch file). If this is NOT the case all the gains will be set to the default value in the [configure](./cfg/Gains.cfg) file. Please refer to the [tutorial](http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile) for the dynamic configure for more details.
 
- - **Velocity + Altitude**
-Controls based on x and y velocity, yawrate, and altitude setpoints. To enable this mode, set the **control_mode** parameter to "velocity_altitude".
-	 - **Position Control Override**
-	 In the **Velocity + Altitude** control mode, X/Y/yaw position control override can be enabled if both ROSFlight RC data and motion capture feedback are available. If the **enable_xy_position_controller** parameter is set to true, the RC channel corresponding to the **position_override_channel** parameter will enable the override if its value is greater than 1500.
-
-### ROS Topics and Messages
-
-#### Internal Message Types
- - **ControllerState**
-	 - **current**: current value of controller process variable (float64)
-	 - **setpoint**: current value of controller setpoint (float64)
-	 - **output**: current value of controller output (float64)
- - **PIDControllerState**
-	 - **yaw**: current yaw angle PID controller state (ControllerState)
-	 - **x**: current x position PID controller state (ControllerState)
-	 - **y**: current y position PID controller state (ControllerState)
-	 - **z**: current z position PID controller state (ControllerState)
-	 - **x_dot**: current x velocity PID controller state (ControllerState)
-	 - **y_dot**: current y velocity PID controller state (ControllerState)
-	 - **z_dot**: current z velocity PID controller state (ControllerState)
-#### Subscribed Topics
-|Topic Name|Message Type|Description|
-|--|--|--|
-|mocap_ned|geometry_msgs::PoseStamped|Motion capture pose topic for position control|
-|rc_raw|rosflight_msgs::RCRaw|ROSFlight raw RC data for position override switch|
-|status|rosflight_msgs::Status|ROSFlight flight controller status messages|
-|teleop_command/altitude|reef_teleop::AltitudeCommand|REEF Teleop altitude commands|
-|teleop_command/attitude|reef_teleop::AttitudeCommand|REEF Teleop attitude commands|
-|teleop_command/velocity|reef_teleop::VelocityCommand|REEF Teleop velocity commands|
-|xyz_estimate|reef_estimator::XYZEstimate|Current state estimates for controller feedback purposes|
-
-#### Published Topics
-|Topic Name|Message Type|Description|
-|--|--|--|
-|controller_state|reef_controller::PIDControllerState|Current setpoints, process variables, and outputs for all PID controllers.|
-
-### Launchfile Node Examples
-Example launchfile node for Attitude + Altitude control:
+### Tuning the Gains:
+1) Enable a ground station to communicate with the ROS Master which is running on the vehicle's on-board computer. Refer to this [tutorial](http://wiki.ros.org/ROS/Tutorials/MultipleMachines) to implement this. To test this is working, run roscore on the vehicle and check if you can see the topics on the ground station. 
+2) Once Step 1 works, launch the REEF_control node on the vehicle (ideally using SSH)
+3) On the ground station (which is connected to the ROS Master), run
 ```xml
-<node name="reef_controller" pkg="reef_controller" type="reef_controller" output="screen">
-    <rosparam file="$(find reef_controller)/params/pid.yaml" />
-    <rosparam subst_value="true">
-        control_mode: "attitude_altitude"
-        enable_xy_position_controller: false
-    </rosparam>
-</node>
+rosrun rqt_reconfigure rqt_reconfigure
 ```
-Example launchfile node for Velocity + Altitude control:
-```xml
-<node name="reef_controller" pkg="reef_controller" type="reef_controller" output="screen">
-    <rosparam file="$(find reef_controller)/params/pid.yaml" />
-    <rosparam subst_value="true">
-        control_mode: "velocity_altitude"
-        enable_xy_position_controller: false
-    </rosparam>
-</node>
-```
-Example launchfile node for Position Override control:
-```xml
-<node name="reef_controller" pkg="reef_controller" type="reef_controller" output="screen">
-    <rosparam file="$(find reef_controller)/params/pid.yaml" />
-    <rosparam subst_value="true">
-        control_mode: "velocity_altitude"
-        enable_xy_position_controller: true
-        initial_x_cmd: 0.0
-        initial_y_cmd: 0.0
-        initial_z_cmd: -1.0
-    </rosparam>
-</node>
-```
+Then, the following window will open up:
+![Dynamice Reconfiugre](./docs/Dynamic_Reconfigure.png)
+
+Move the gains to get the desired performance and once satisfied, copy the parameters to the yaml file. The gains do not get copied over automatically, you need to copy them manually. If you close the window they will get erased. 
+
+From experience, it is recommended that you start with tuning the altitude (d and w) since it is the easiest axis to tune. 
+## Notes
+
+The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). These are more like issues with the PID controller than the package.
+1) The performance of the controller is highly dependent on the battery level i.e the hover throttle parameter changes depending on the battery level.
+2) In vehicles with low inertia, the battery placement is really critical. If you tune you controller using one placement and then change the battery it is highly likely that the gains will have to be changed. So when building your vehicle see if you can ensure constant and stable battery placement.
+
+The code is intended to be as modular as possible. If you do not like the PID controller, you can design your own controller and replace just PID.cpp. 
+
+This package is an adoptation of a similar package developed by BYU's Magicc Lab. 
