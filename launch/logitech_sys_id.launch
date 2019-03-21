@@ -2,7 +2,7 @@
 
     <arg name="vehicle" default="dodo"/>
     <arg name="run_estimator" default="true"/>
-    <arg name="control_mode" value="attitude_altitude"/>
+    <arg name="control_mode" value="altitude_hold"/>
     <arg name="record_bag" default="true"/>
     <arg name="bag_name" default="test"/>
 
@@ -16,10 +16,10 @@
         <arg name="min_z_cmd" value="-3.0"/>
         <arg name="max_z_cmd" value="0.0"/>
 
-        <arg name="invert_x" value="true"/>
+        <arg name="invert_x" value="false"/>
 
-        <arg name="pitch_max" default="0.25"/>
-        <arg name="roll_max" default="0.25"/>
+        <arg name="pitch_max" default="0.786"/>
+        <arg name="roll_max" default="0.786"/>
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
