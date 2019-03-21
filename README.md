@@ -15,6 +15,7 @@ The desired_state message supports position command, velocity commands, attitude
 ### Lookup Table Control
 In a cascading PID loop, the position command is converted to a velocity command which is then further converted to a attitude command. Since position and velocity commands have a "simple" and "intutive" relationship ie if the desired position is to the left of the vehicle, the body frame velocity also have to point to the right. So, a lookup table is preferred in comparision to a PID loop. The control law is extremely simple: Unless you are within a certain threshold distance from the desired position a constant velocity is applied. If you are within the threshold, the velocity is gradually decreased (the decrease is modelled like a sigmoid function). 
 The equation is given by:
+
 ![Velocity Request](./docs/Sigmoid_Equation.png) 
 
 The figure below is a plot of the velocity request as a function of time 
@@ -101,6 +102,7 @@ The dynamic tuning uses the yaml parameters as the default values. Hence the gai
 rosrun rqt_reconfigure rqt_reconfigure
 ```
 Then, the following window will open up:
+
 ![Dynamice Reconfiugre](./docs/Dynamic_Reconfigure.png)
 
 Move the gains to get the desired performance and once satisfied, copy the parameters to the yaml file. The gains do not get copied over automatically, you need to copy them manually. If you close the window they will get erased. 

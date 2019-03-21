@@ -16,7 +16,7 @@ alpha = 0.4;
 x_vel = zeros(1,length(traj));
 y_vel = zeros(1,length(traj));
 euclidean_distance = zeros(1,length(traj));
-
+velocity_request = zeros(1,length(traj));
 for i = 1:length(traj)
     x_error = (des_pose(1) - traj(1,i));
     y_error = (des_pose(2) - traj(2,i));
@@ -24,15 +24,18 @@ for i = 1:length(traj)
     euclidean_distance(i) = sqrt( x_error^2 + y_error^2);
     
     if euclidean_distance(i) < deadzone
-        velocity_request = 0;
+        velocity_request(i) = 0;
     else
-        velocity_request = vel_max * 1/(1+kp * exp(-(euclidean_distance(i) - x_0)/alpha));
+        velocity_request(i) = vel_max * 1/(1+kp * exp(-(euclidean_distance(i) - x_0)/alpha));
     end
     
     theta = atan2(y_error, x_error) - atan2(traj(2,i), traj(1,i));
-    x_vel(i) = velocity_request * cos(theta);
-    y_vel(i) = velocity_request * sin(theta);
+    x_vel(i) = velocity_request(i) * cos(theta);
+    y_vel(i) = velocity_request(i) * sin(theta);
 end
 
-
-plot(euclidean_distance , x_vel, euclidean_distance, y_vel)
+figure()
+plot(euclidean_distance , velocity_request, 'b','LineWidth',3)
+title('REEF Control Lookup Control')
+xlabel('Euclidean Distance m')
+ylabel('Velocity Request m/s')
