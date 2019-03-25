@@ -110,7 +110,7 @@ Move the gains to get the desired performance and once satisfied, copy the param
 From experience, it is recommended that you start with tuning the altitude (d and w) since it is the easiest axis to tune. 
 ## Notes
 
-The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). These are more like issues with the PID controller than the package.
+The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). The user has to taken into considersation some issues while using/tuning the controller. These ussues are more like with the PID controller than the package/code.
 1) The performance of the controller is highly dependent on the battery level i.e the hover throttle parameter changes depending on the battery level.
 2) In vehicles with low inertia, the battery placement is really critical. If you tune you controller using one placement and then change the battery it is highly likely that the gains will have to be changed. So when building your vehicle see if you can ensure constant and stable battery placement.
 
