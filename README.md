@@ -22,7 +22,7 @@ The equation is given by:
 The figure below is a plot of the velocity request as a function of time 
 ![Velocity Request Plot](./docs/velocity_request.jpg). 
 
-The characteristics of the curve can be altered using the *deadzone*,*kp*,*center_point*,*alpha* and *max_velocity* parameters. A [MATLAB script](./scripts/configure_lookup_table.m) can be used to visualize the commands prior to actual implementation.
+The characteristics of the curve can be altered using the *deadzone*, *kp*, *center_point*, *alpha*, and *max_velocity* parameters. A [MATLAB script](./scripts/configure_lookup_table.m) can be used to visualize the commands prior to implementation.
 
 ## Installation
 Simply clone **reef_controller** to the catkin workspace src directory and compile it to make sure everything works.
@@ -43,7 +43,7 @@ The reef control node subscribes the following topics:
  * /status [rosflight_msgs/Status]* - Status of flight controller to tell if the vehicle is armed
  * /xyz_estimate [reef_msgs/XYZEstimate]* - Estimates used to get Z and XY Velocity estimates
  
- *Requred topics. All others are optional.
+ ** *Requred topics. All others are optional.**
 The node publishes the following messages:
 * /command [rosflight_msgs/Command] - Desired attitude commands
 * /controller_state [reef_msgs/DesiredState] - Internal results of the PID loops
