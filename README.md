@@ -43,7 +43,7 @@ The reef control node subscribes the following topics:
  * /status [rosflight_msgs/Status]* - Status of flight controller to tell if the vehicle is armed
  * /xyz_estimate [reef_msgs/XYZEstimate]* - Estimates used to get Z and XY Velocity estimates
  
- ** *Requred topics. All others are optional.**
+ **Requred topics. All others are optional.**
 The node publishes the following messages:
 * /command [rosflight_msgs/Command] - Desired attitude commands
 * /controller_state [reef_msgs/DesiredState] - Internal results of the PID loops
