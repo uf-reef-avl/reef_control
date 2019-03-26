@@ -114,7 +114,7 @@ From experience, it is recommended that you start with tuning the altitude (d an
 ## Notes
 
 The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). The user has to take into considersation some issues while using/tuning the controller such as:
-1) The performance of the controller is highly dependent on the battery level i.e the hover throttle parameter changes depending on the battery level.
+1) The performance of the controller is highly dependent on the battery level since the hover throttle parameter changes depending on the battery level.
 2) In vehicles with low inertia, the battery placement is really critical. If you tune you controller using one placement and then change the battery it is highly likely that the gains will have to be changed. So when building your vehicle see if you can ensure constant and stable battery placement.
 
 The code is intended to be as modular as possible. If you do not like the PID controller, you can design your own controller and replace just PID.cpp. 
