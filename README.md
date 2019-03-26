@@ -52,11 +52,12 @@ The node publishes the following messages:
 There are two other topics from the dynamic reconfigure package which are not relevant. 
 
 ### ROS Launch Usage
-REEF Controller is designed to be executed from a launchfile. **reef_controller** should be the name of the node, the package, and the type. For example,
+The REEF Controller is designed to be executed from a launchfile, **reef_controller** should be the name of the node, the package, and the type. For example,
 ```xml
 <node name="reef_controller" pkg="reef_controller" type="reef_controller" output="screen"/>
 ```
-In order to launch this node you MUST also load a the max_roll, max_pitch, max_yaw_rate and hover_throttle parameters. **The node will not run unless these parameters are loaded.** Apart from these parameters, for the PID loop the work, the gains which are also loaded through a YAML file is needed.
+In order to launch this node you MUST also load a the max_roll, max_pitch, max_yaw_rate and hover_throttle parameters. **The node will not run unless these parameters are loaded**. For the PID loop the work the gains must be loaded through a .yaml file.
+
 ## Parameters
 The internal PID controllers can be tuned by setting the gain and output clamp values in **reef_controller/params/$(vehicle)_pid.yaml**. An example YAML file looks like the following:
 ```xml
