@@ -1,12 +1,12 @@
 # REEF Control
-The REEF Control package contains a set of simple cascading PID controllers designed to enable attitude, velocity, and position control. The package was originally intended for implemention of a PID controller using the REEF Estimator but can be easily integrated with other estimators and other controllers. 
-
+The REEF Control package contains a set of simple cascading PID controllers designed to enable attitude, velocity, and position control. The package was originally intended for a PID controller using the REEF Estimator but can be easily integrated with other estimators and other controllers. 
 
 Another feature of this package is that it enables the user to tune the gains of the PID controller dynamically.  
 **All components are expressed in the NED frame since ROSFlight expects the attitude command in that frame**
 ## Prerequisites
-Requires [ROS Kinetic](http://wiki.ros.org/kinetic/Installation), [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) and the [REEF_msgs](http://192.168.1.101/AVL-Summer-18/reef_msgs) package to be installed. For REEF Estimator feedback, [REEF Estimator](http://192.168.1.101/AVL-Summer-18/reef_estimator) should be installed. For REEF Teleop control, [REEF Teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop) should be installed.
-Additionally, the package depends on the [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) package.
+Requires [ROS Kinetic](http://wiki.ros.org/kinetic/Installation), [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) and the [REEF_msgs](http://192.168.1.101/AVL-Summer-18/reef_msgs) package to be installed. Additionally, the package depends on the [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) package.
+For REEF Estimator feedback, [REEF Estimator](http://192.168.1.101/AVL-Summer-18/reef_estimator) should be installed. For REEF Teleop control, [REEF Teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop) should be installed.
+
 ## Backgroud
 The REEF Estimator was designed only to function as a controller i.e take in desired position, velocity or attitude and convert them to commanded attitude expected by the ROSFlight module. This node will not decide the mode of operation, it expects the desired_state message to convey that to the controller. So for this node to work, there needs to be a higher level node that publishes the desired state (eg. [reef_teleop](http://192.168.1.101/AVL-Summer-18/reef_teleop), [dubins_path](http://192.168.1.101/AVL-Summer-18/dubins_path) or [setpoint_generator](https://github.com/uncc-visionlab/setpoint_publisher)  )
 
