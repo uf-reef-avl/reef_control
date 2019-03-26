@@ -90,10 +90,10 @@ As explained in the [lookup table](###Lookup Table Control) section the paramete
 The u(PID), v(PID), w(PID), d(PID) and yaw(PID) are the PID gains for the body frame x,y,z velocities, altitude and yaw respectively.
 *hover_throttle* is the percentage thrust required to keep the vehicle in a stable hover. The max parameters are set subsequently. 
 
-*face_target* parameter is used to decide if you want the vehicle heading to face the next waypoint, *fly_fixed_wing* is used make a multirotor platform "fly like a fixed wing vehicle" i.e, instead of a hover and yaw, there will be a slight forward velocity as it yaws.
+*face_target* parameter is used to decide if you want the vehicle heading to face the next waypoint, *fly_fixed_wing* is used make a multirotor platform "fly like a fixed wing vehicle" where instead of a hovering and yawing, there will be a slight forward velocity as it yaws.
 
 ## Dynamic Tuning
-Dynamic tuning has been used in our lab inorder to tune the PID gains while the vehicle is in flight. When using this, please exercise caution as drastic changes to certain gains can lead to crashes. 
+Dynamic tuning has been used in our lab in order to tune the PID gains while the vehicle is in flight. When using this, please exercise caution as drastic changes to certain gains can lead to crashes. 
 
 The dynamic tuning uses the yaml parameters as the default values. Hence the gains are launched using a namespace which is the SAME as the name of the node (refer to launch file). If this is NOT the case all the gains will be set to the default value in the [configure](./cfg/Gains.cfg) file. Please refer to the [tutorial](http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile) for the dynamic configure for more details.
 
@@ -113,7 +113,7 @@ Move the gains to get the desired performance and once satisfied, copy the param
 From experience, it is recommended that you start with tuning the altitude (d and w) since it is the easiest axis to tune. 
 ## Notes
 
-The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). The user has to taken into considersation some issues while using/tuning the controller. These ussues are more like with the PID controller than the package/code.
+The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). The user has to take into considersation some issues while using/tuning the controller such as:
 1) The performance of the controller is highly dependent on the battery level i.e the hover throttle parameter changes depending on the battery level.
 2) In vehicles with low inertia, the battery placement is really critical. If you tune you controller using one placement and then change the battery it is highly likely that the gains will have to be changed. So when building your vehicle see if you can ensure constant and stable battery placement.
 
