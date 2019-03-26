@@ -44,10 +44,10 @@ The reef control node subscribes the following topics:
  * /xyz_estimate [reef_msgs/XYZEstimate]* - Estimates used to get Z and XY Velocity estimates
  
  **Topics denoted with a ```*``` are requred. All others are optional.**
-The node publishes the following messages:
+```The node publishes the following messages:
 * /command [rosflight_msgs/Command] - Desired attitude commands
 * /controller_state [reef_msgs/DesiredState] - Internal results of the PID loops
-
+```
 There are two other topics from the dynamic reconfigure package which are not relevant. 
 
 ### ROS Launch Usage
