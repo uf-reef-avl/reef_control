@@ -15,30 +15,23 @@
         <arg name="initial_z_cmd" value="-1.0"/>
         <arg name="min_z_cmd" value="-3.0"/>
         <arg name="max_z_cmd" value="0.0"/>
-
-        <arg name="invert_x" value="true"/>
-
+        <arg name="invert_x" value="false"/>
         <arg name="x_dot_max" default="2.0"/>
         <arg name="y_dot_max" default="2.0"/>
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
     <rosparam command="load" file="$(find reef_estimator)/params/dodo_camera.yaml" />
+
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
         <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
         <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
+        <rosparam file="$(find reef_estimator)/params/basic_params.yaml" />
         <rosparam>
-            enable_rgbd: false
+            enable_rgbd: true
             enable_sonar: false
-            enable_mocap_xy: true
+            enable_mocap_xy: false
             enable_mocap_z: true
-            debug_mode: true
-            enable_partial_update: true
-            enable_mocap_switch: false
-            mahalanobis_d_sonar: 20
-            mahalanobis_d_rgbd_velocity: 20
-            mahalanobis_d_mocap_z: 20
-            mahalanobis_d_mocap_velocity: 80
         </rosparam>
         <remap from="mocap_ned" to="pose_stamped"/>
         <remap from="mocap_velocity/body_level_frame" to="velocity/body_level_frame"/>
@@ -53,8 +46,14 @@
         <rosparam command="load" file="$(find position_to_velocity)/params/basic.yaml" />
     </node>
 
+    <node name="odom_to_velocity" pkg="odom_to_velocity" type="odom_to_velocity_node" output="screen">
+        <rosparam command="load" file="$(find odom_to_velocity)/params/basic.yaml" />
+    </node>
+
+    <include file="$(find uncc_rgbd_odom)/launch/astra_pro_rgbd.launch"/>
+
     <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml" />
     <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
 
-  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state"/>
+  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
 </launch>
