@@ -37,7 +37,7 @@ namespace reef_control
     w_.setGains(     config.wP,   uIntegrator*config.wI,   config.wD,   config.uvtau);
 
     d_.setMinMax(-0.7, config.max_d);
-    yaw_.setMinMax(-100.0, 100.0);
+    yaw_.setMinMax(-2.0, 2.0);
     u_.setMinMax(-config.max_u, config.max_u);
     v_.setMinMax(-config.max_v, config.max_v);
     w_.setMinMax(-config.max_w, config.max_w);
@@ -57,7 +57,7 @@ namespace reef_control
     current_yaw = reef_msgs::get_yaw(current_state_.pose.pose.orientation);
     desired_state.velocity.z = d_.computePID(desired_state.pose.z, current_state_.pose.pose.position.z, dt);
     desired_state.acceleration.z = w_.computePID(desired_state.velocity.z, current_state_.twist.twist.linear.z, dt);
-    
+
     if(desired_state.position_valid)
     {
       if(face_target_)
