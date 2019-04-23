@@ -111,6 +111,9 @@ Then, the following window will open up:
 Move the gains to get the desired performance and once satisfied, copy the parameters to the yaml file. The gains do not get copied over automatically, you need to copy them manually. If you close the window they will get erased. 
 
 From experience, it is recommended that you start with tuning the altitude (d and w) since it is the easiest axis to tune. 
+## Flowchart
+![REEF Control Flowchart](./docs/Flowchart.png)
+
 ## Notes
 
 The point of REEF_control is to have a simple system that works. This does not do anything fancy like go through doorways or [play the piano](https://www.ted.com/talks/vijay_kumar_robots_that_fly_and_cooperate?language=en). The user has to take into considersation some issues while using/tuning the controller such as:
