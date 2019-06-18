@@ -45,8 +45,8 @@
         <remap from="rgbd_velocity_body_frame" to="rgbd_velocity/body_level_frame"/>
     </node>
 
-    <node pkg="ros_vrpn_client" name="$(arg vehicle)" type="ros_vrpn_client" args="_vrpn_server_ip:=192.168.1.104" required="true" output="screen">
-        <remap from="$(arg vehicle)/ned/pose_stamped" to="pose_stamped"/>
+    <node pkg="ros_vrpn_client" name="kiwi" type="ros_vrpn_client" args="_vrpn_server_ip:=192.168.1.104" required="true" output="screen">
+        <remap from="kiwi/ned/pose_stamped" to="pose_stamped"/>
     </node>
 
     <node name="pose_to_vel" pkg="position_to_velocity" type="position_to_velocity_node" output="screen" >

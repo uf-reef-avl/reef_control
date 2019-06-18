@@ -1,3 +1,4 @@
+
 <launch>
 
     <arg name="vehicle" default="kiwi"/>
@@ -6,8 +7,8 @@
     <arg name="run_demo_rgbd" default="true"/>
 
     <arg name="control_mode" value="velocity_altitude"/>
-    <arg name="record_bag" default="true"/>
-    <arg name="bag_name" default="testrgbd"/>
+    <arg name="record_bag" default="false"/>
+    <arg name="bag_name" default="test"/>
 
     <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
         <param name="port" value="/dev/ttyUSB0"/>
@@ -24,23 +25,21 @@
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
-    <rosparam command="load" file="$(find reef_estimator)/params/kiwi_camera.yaml" />
-        <rosparam command="load" file="$(find demo_rgbd)/params/kiwi_camera.yaml" />
- <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
+    <rosparam command="load" file="$(find reef_estimator)/params/dodo_camera.yaml" />
 
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
         <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
         <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
         <rosparam file="$(find reef_estimator)/params/basic_params.yaml" />
         <rosparam>
-            enable_rgbd: true
-            enable_sonar: true
-            enable_mocap_xy: false
-            enable_mocap_z: false
+            enable_rgbd: false
+            enable_sonar: false
+            enable_mocap_xy: true
+            enable_mocap_z: true
         </rosparam>
         <remap from="mocap_ned" to="pose_stamped"/>
         <remap from="mocap_velocity/body_level_frame" to="velocity/body_level_frame"/>
-        <remap from="rgbd_velocity_body_frame" to="rgbd_to_velocity/body_level_frame"/>
+        <remap from="rgbd_velocity_body_frame" to="rgbd_velocity/body_level_frame"/>
     </node>
 
     <node pkg="ros_vrpn_client" name="$(arg vehicle)" type="ros_vrpn_client" args="_vrpn_server_ip:=192.168.1.104" required="true" output="screen">
@@ -66,11 +65,9 @@
 <!--        <rosparam command="load" file="$(find demo_rgbd)/params/kiwi_camera.yaml" />-->
         <include file="$(find demo_rgbd)/launch/demo_rgbd.launch"/>
 
-    </group>
-
 
     <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml" />
     <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
 
-  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
+  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
 </launch>
