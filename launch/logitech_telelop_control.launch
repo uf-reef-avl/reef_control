@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="vehicle" default="kiwi"/>
+    <arg name="vehicle" default="dodo"/>
     <arg name="run_estimator" default="true"/>
     <arg name="run_uncc" default="false"/>
     <arg name="run_demo_rgbd" default="true"/>
@@ -24,8 +24,8 @@
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
-    <rosparam command="load" file="$(find reef_estimator)/params/kiwi_camera.yaml" />
-        <rosparam command="load" file="$(find demo_rgbd)/params/kiwi_camera.yaml" />
+    <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
+        <rosparam command="load" file="$(find demo_rgbd)/params/$(arg vehicle)_camera.yaml" />
  <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
 
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
