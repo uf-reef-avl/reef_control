@@ -19,14 +19,14 @@
         <arg name="min_z_cmd" value="-3.0"/>
         <arg name="max_z_cmd" value="0.0"/>
         <arg name="invert_x" value="false"/>
-        <arg name="x_dot_max" default="2.0"/>
-        <arg name="y_dot_max" default="2.0"/>
+        <arg name="x_dot_max" default="0.50"/>
+        <arg name="y_dot_max" default="0.50"/>
         <arg name="yawrate_max" default="1.57"/>
     </include>
 
     <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
-        <rosparam command="load" file="$(find demo_rgbd)/params/$(arg vehicle)_camera.yaml" />
- <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
+    <rosparam command="load" file="$(find demo_rgbd)/params/$(arg vehicle)_camera.yaml" />
+    <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
 
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
         <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
@@ -35,8 +35,8 @@
         <rosparam>
             enable_rgbd: true
             enable_sonar: true
-            enable_mocap_xy: false
-            enable_mocap_z: false
+            enable_mocap_xy: true
+            enable_mocap_z: true
         </rosparam>
         <remap from="mocap_ned" to="pose_stamped"/>
         <remap from="mocap_velocity/body_level_frame" to="velocity/body_level_frame"/>

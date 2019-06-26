@@ -59,7 +59,7 @@ namespace reef_control
   void Controller::statusCallback(const rosflight_msgs::Status &msg)
   {
     armed_ = msg.armed;
-    initialized_ = is_flying_ && armed_;
+    initialized_ = armed_;
   }
 
   void Controller::isflyingCallback(const std_msgs::Bool &msg)
@@ -86,6 +86,11 @@ namespace reef_control
 
     computeCommand(current_state_ ,desired_state_,dt);
 
+    phi_desired = desired_state_.acceleration.y;
+    theta_desired = -desired_state_.acceleration.x;
+    thrust = -desired_state_.acceleration.z;
+
+    /*
     accel_out = Eigen::Vector3d(desired_state_.acceleration.x, desired_state_.acceleration.y, desired_state_.acceleration.z );
     total_accel = sqrt( pow(accel_out.x(),2) + pow(accel_out.y(),2) + pow((1 - accel_out.z()),2) );
     thrust = total_accel * hover_throttle_ ;
@@ -100,6 +105,7 @@ namespace reef_control
         phi_desired = 0;
         theta_desired = 0;
     }
+    */
 
     command.mode = rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
     command.F = std::min(std::max(thrust, 0.0), 1.0);
