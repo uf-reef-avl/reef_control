@@ -14,12 +14,6 @@ namespace reef_control
     // Get Global Parameters
     nh_.param<double>("gravity", gravity_, 9.80665);
 
-    ROS_ASSERT_MSG(nh_private_.getParam("max_roll", max_roll_), "[rotor_controller] - missing parameters");
-    ROS_ASSERT(nh_private_.getParam("max_pitch", max_pitch_));
-    ROS_ASSERT(nh_private_.getParam("max_yaw_rate", max_yaw_rate_));
-    ROS_ASSERT(nh_private_.getParam("hover_throttle", hover_throttle_));
-    ROS_ERROR("hover_throttle = %f", hover_throttle_);
-
     command_publisher_       = nh_.advertise<rosflight_msgs::Command>("command", 1);
 
     desired_state_subcriber_ = nh_.subscribe("desired_state",1,&Controller::desiredStateCallback,this);

@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <dynamic_reconfigure/server.h>
-#include <reef_control/GainsConfig.h>
+#include <reef_adaptive_control/GainsConfig.h>
 #include <simple_pid.h>
 #include <math.h>
 #include <algorithm>
@@ -43,10 +43,10 @@ namespace reef_control
 
     ros::Publisher desired_state_pub_;
 
-    dynamic_reconfigure::Server<reef_control::GainsConfig> server_;
-    dynamic_reconfigure::Server<reef_control::GainsConfig>::CallbackType func_;
+    dynamic_reconfigure::Server<reef_adaptive_control::GainsConfig> server_;
+    dynamic_reconfigure::Server<reef_adaptive_control::GainsConfig>::CallbackType func_;
 
-    void gainsCallback(reef_control::GainsConfig &config, uint32_t level);
+    void gainsCallback(reef_adaptive_control::GainsConfig &config, uint32_t level);
 
     void lookupTable(reef_msgs::DesiredState& desired_state ,const nav_msgs::Odometry& current_state);
 
