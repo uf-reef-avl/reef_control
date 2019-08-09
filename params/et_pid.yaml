@@ -8,6 +8,7 @@ reef_control: {
     yawP: 1.08, yawI: 0.08, yawD: 0.01, yawtau: 0.15, #yaw
     xIntegrator: 1,
     uIntegrator: 1,
+    hover_throttle: 0.66,
 
     max_roll: 0.25,
     max_pitch: 0.25,

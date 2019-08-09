@@ -29,7 +29,7 @@ Simply clone **reef_controller** to the catkin workspace src directory and compi
 ```
 sudo apt-get install ros-kinetic-dynamic-reconfigure
 cd catkin_ws/src
-git clone https://github.com/uf-reef-avl/reef_control
+git clone http://192.168.1.101/AVL-Summer-18/reef_controller
 cd ../ && catkin_make
 ```
 ## Usage
@@ -71,6 +71,7 @@ reef_control_pid: {
     yawP: 1.08, yawI: 0.08, yawD: 0.01, yawtau: 0.15, #yaw
     xIntegrator: 1,
     uIntegrator: 1,
+    hover_throttle: 0.57,
 
     max_roll: 0.25,
     max_pitch: 0.25,
