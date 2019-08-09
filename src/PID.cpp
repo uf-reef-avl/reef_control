@@ -13,7 +13,7 @@ namespace reef_control
     nh_.param<bool>("fly_fixed_wing",fly_fixed_wing_, false);
   }
 
-  void PIDController::gainsCallback(reef_adaptive_control::GainsConfig &config, uint32_t level)
+  void PIDController::gainsCallback(reef_control::GainsConfig &config, uint32_t level)
   {
     double xIntegrator = config.xIntegrator?1.0:0.0;
     double uIntegrator = config.uIntegrator?1.0:0.0;

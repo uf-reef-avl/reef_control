@@ -1,12 +1,13 @@
 <launch>
 
     <arg name="vehicle" default="kiwi"/>
+    <arg name="vehicle_type" default="quad"/>
     <arg name="run_estimator" default="true"/>
     <arg name="run_uncc" default="false"/>
     <arg name="run_demo_rgbd" default="true"/>
 
     <arg name="control_mode" value="velocity_altitude"/>
-    <arg name="record_bag" default="true"/>
+    <arg name="record_bag" default="false"/>
     <arg name="bag_name" default="testrgbd"/>
 
     <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
@@ -25,8 +26,6 @@
     </include>
 
     <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
-    <rosparam command="load" file="$(find demo_rgbd)/params/$(arg vehicle)_camera.yaml" />
-    <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
 
     <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
         <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
@@ -50,18 +49,18 @@
     <node name="pose_to_vel" pkg="position_to_velocity" type="position_to_velocity_node" output="screen" >
         <rosparam command="load" file="$(find position_to_velocity)/params/basic.yaml" />
     </node>
+
     <group if="$(arg run_uncc)">
         <node name="odom_to_velocity" pkg="odom_to_velocity" type="odom_to_velocity_node" output="screen">
             <rosparam command="load" file="$(find odom_to_velocity)/params/basic.yaml" />
         </node>
-
         <include file="$(find uncc_rgbd_odom)/launch/astra_pro_rgbd.launch"/>
     </group>
 
- <group if="$(arg run_demo_rgbd)">
-<!--        <include file="$(find demo_rgbd)/launch/demo_bag.launch">-->
-<!--        </include>-->
-<include file="$(find astra_launch)/launch/astra_pro.launch"/>
+    <group if="$(arg run_demo_rgbd)">
+        <rosparam command="load" file="$(find demo_rgbd)/params/$(arg vehicle)_camera.yaml" />
+        <rosparam command="load" file="$(find rgbd_to_velocity)/params/rgbd_to_velocity_params.yaml" />
+        <include file="$(find astra_launch)/launch/astra_pro.launch"/>
         <include file="$(find rgbd_to_velocity)/launch/rgbd_to_velocity.launch"/>
         <rosparam command="load" file="$(find demo_rgbd)/params/kiwi_camera.yaml" />
         <include file="$(find demo_rgbd)/launch/demo_rgbd.launch"/>
@@ -69,7 +68,7 @@
     </group>
 
 
-    <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml" />
+    <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
     <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
 
   <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
