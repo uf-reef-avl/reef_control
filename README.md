@@ -4,7 +4,7 @@ The REEF Control package contains a set of simple cascading PID controllers desi
 Another feature of this package is that it enables the user to tune the gains of the PID controller dynamically.  
 **All components are expressed in the NED frame since ROSFlight expects the attitude command in that frame**
 ## Prerequisites
-Requires [ROS Melodic](http://wiki.ros.org/melodic/Installation), [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) and the [REEF_msgs](https://github.com/uf-reef-avl/AVL-Summer-18/reef_msgs) package to be installed. Additionally, the package depends on the [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) package.
+Requires [ROS Melodic](http://wiki.ros.org/melodic/Installation), [ROSFlight](http://docs.rosflight.org/en/latest/user-guide/ros-setup/) and the [REEF_msgs](https://github.com/uf-reef-avl/reef_msgs) package to be installed. Additionally, the package depends on the [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) package.
 For REEF Estimator feedback, [REEF Estimator](https://github.com/uf-reef-avl/reef_estimator) should be installed. For REEF Teleop control, [REEF Teleop](https://github.com/uf-reef-avl/reef_teleop) should be installed.
 
 ## Backgroud
