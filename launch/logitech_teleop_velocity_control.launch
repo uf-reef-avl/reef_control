@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="vehicle" default="kiwi"/>
+    <arg name="vehicle" default="wren"/>
     <arg name="vehicle_type" default="quad"/>
     <arg name="run_estimator" default="true"/>
     <arg name="run_demo_rgbd" default="true"/>
