@@ -14,7 +14,7 @@ namespace reef_control
     // Get Global Parameters
     nh_.param<double>("gravity", gravity_, 9.80665);
 
-    ROS_ASSERT_MSG(nh_private_.getParam("max_roll", max_roll_), "[rotor_controller] - missing parameters");
+    ROS_ASSERT(nh_private_.getParam("max_roll", max_roll_));
     ROS_ASSERT(nh_private_.getParam("max_pitch", max_pitch_));
     ROS_ASSERT(nh_private_.getParam("max_yaw_rate", max_yaw_rate_));
     command_publisher_       = nh_.advertise<rosflight_msgs::Command>("command", 1);
@@ -25,7 +25,12 @@ namespace reef_control
     current_state_subcriber_ = nh_.subscribe("xyz_estimate", 1, &Controller::currentStateCallback,this);
     rc_in_subcriber_         = nh_.subscribe("rc_raw",1,&Controller::RCInCallback,this);
     pose_subcriber_          = nh_.subscribe("pose_stamped", 1, &Controller::poseCallback,this);
-
+      max_roll_ = 0.25;
+      max_pitch_ = 0.25;
+      max_yaw_rate_ = 2.0;
+      ROS_INFO_STREAM("Max Roll " << max_roll_);
+      ROS_INFO_STREAM("Max Pitch " << max_pitch_);
+      ROS_INFO_STREAM("Max Yaw " << max_yaw_rate_);
     time_of_previous_control_ = ros::Time(0);
 
   }
@@ -86,23 +91,6 @@ namespace reef_control
     phi_desired = desired_state_.acceleration.y;
     theta_desired = -desired_state_.acceleration.x;
     thrust = -desired_state_.acceleration.z;
-
-    /*
-    accel_out = Eigen::Vector3d(desired_state_.acceleration.x, desired_state_.acceleration.y, desired_state_.acceleration.z );
-    total_accel = sqrt( pow(accel_out.x(),2) + pow(accel_out.y(),2) + pow((1 - accel_out.z()),2) );
-    thrust = total_accel * hover_throttle_ ;
-
-    if(thrust > 0.001)
-    {
-      phi_desired = asin(accel_out.y() / total_accel);
-      theta_desired = -1.0 * asin(accel_out.x() / total_accel);
-    }
-    else
-    {
-        phi_desired = 0;
-        theta_desired = 0;
-    }
-    */
 
     command.mode = rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
     command.F = std::min(std::max(thrust, 0.0), 1.0);
