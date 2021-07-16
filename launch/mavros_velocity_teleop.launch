@@ -1,0 +1,71 @@
+<launch>
+    <arg name="vehicle" default="penguin"/>
+    <arg name="vehicle_type" default="quad"/>
+    <arg name="run_estimator" default="true"/>
+
+    <arg name="control_mode" value="velocity_altitude"/>
+    <arg name="record_bag" default="false"/>
+    <arg name="bag_name" default="velocity_control"/>
+    <arg name="run_aruco" default="false"/>
+
+    <include file="$(find mavros)/launch/apm.launch">
+        <arg name="fcu_url" value="/dev/ttyUSB0:921600?ids=255,240"/>
+    </include>
+
+    <node pkg="ros_vrpn_client" name="$(arg vehicle)" type="ros_vrpn_client" args="_vrpn_server_ip:=192.168.1.104" required="true" output="screen">
+        <remap from="$(arg vehicle)/ned/pose_stamped" to="pose_stamped"/>
+    </node>
+
+    <node name="pixhawk_xform" type="pixhawk_xform" pkg="pixhawk_xform" output="screen" args="$(arg vehicle)">
+        <remap from="$(arg vehicle)/ned/pose_stamped" to="pose_stamped"/>
+    </node>
+
+    <node pkg="rosservice" type="rosservice" name="setter" args="call --wait /mavros/set_stream_rate 0 200 1" />
+
+    <!--    Launches the REEF teleop node to convert joystick commands to velocity command-->
+    <include file="$(find reef_teleop)/launch/logitech_controller.launch">
+        <arg name="control_mode" value="$(arg control_mode)"/>
+        <arg name="initial_z_cmd" value="-1.0"/>
+        <arg name="min_z_cmd" value="-3.0"/>
+        <arg name="max_z_cmd" value="0.0"/>
+        <arg name="invert_x" value="false"/>
+        <arg name="x_dot_max" default="2.00"/>
+        <arg name="y_dot_max" default="2.00"/>
+        <arg name="yawrate_max" default="1.57"/>
+    </include>
+
+    <!--    Loads the camera to mocap-marker calibration-->
+    <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
+
+    <!--    Runs the REEF estimator-->
+    <node if="$(arg run_estimator)" name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
+        <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
+        <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
+        <rosparam file="$(find reef_estimator)/params/basic_params.yaml" />
+        <rosparam>
+            enable_rgbd: false
+            enable_sonar: false
+            enable_mocap_xy: true
+            enable_mocap_z: true
+        </rosparam>
+        <remap from="mocap_ned" to="pose_stamped"/>
+        <remap from="mocap_velocity/body_level_frame" to="velocity/body_level_frame"/>
+        <remap from="rgbd_velocity_body_frame" to="rgbd_to_velocity/body_level_frame"/>
+    </node>
+
+    <!--    Runs the Position to Velocity node-->
+    <node name="pose_to_vel" pkg="position_to_velocity" type="position_to_velocity_node" output="screen" >
+        <rosparam command="load" file="$(find position_to_velocity)/params/basic.yaml" />
+    </node>
+
+    <!--    Runs the REEF Control node-->
+    <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
+
+    <group if="$(arg run_aruco)">
+        <include file="$(find aruco_ros)/launch/realsense_single.launch"/>
+    </group>
+
+    <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) $(arg vehicle)/nwu/pose_stamped /pose_stamped camera/color/image_raw camera/color/camera_info aruco_single/pose aruco_single/result /tf /mavros/imu/data /mavros/imu/data_raw /mavros/global_position/local /xyz_estimate desired_state joy controller_state"/>
+
+</launch>

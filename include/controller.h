@@ -15,6 +15,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Bool.h>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/Twist.h>
 
 #include <simple_pid.h>
 
@@ -40,6 +41,7 @@ namespace reef_control
     reef_msgs::DesiredState desired_state_;
 
     ros::Publisher command_publisher_;
+    ros::Publisher mavros_velocity_publisher_;
 
     ros::Subscriber status_subscriber_;
     ros::Subscriber current_state_subcriber_;
