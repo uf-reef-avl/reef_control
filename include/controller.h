@@ -16,6 +16,11 @@
 #include <std_msgs/Bool.h>
 #include <nav_msgs/Odometry.h>
 
+//Addition by Adam - 8 Jul 2021
+#include <mavros_msgs/AttitudeTarget.h>
+#include <tf/tf.h>
+#include <tf/transform_datatypes.h>
+
 #include <simple_pid.h>
 
 
@@ -40,6 +45,8 @@ namespace reef_control
     reef_msgs::DesiredState desired_state_;
 
     ros::Publisher command_publisher_;
+
+    ros::Publisher attitude_publisher_;
 
     ros::Subscriber status_subscriber_;
     ros::Subscriber current_state_subcriber_;

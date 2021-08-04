@@ -19,6 +19,9 @@ namespace reef_control
     ROS_ASSERT(nh_private_.getParam("max_yaw_rate", max_yaw_rate_));
     command_publisher_       = nh_.advertise<rosflight_msgs::Command>("command", 1);
 
+    //Attitute publisher for mavros
+    attitude_publisher_ = nh_.advertise<mavros_msgs::AttitudeTarget>("mavros/setpoint_raw/attitude", 1);
+
     desired_state_subcriber_ = nh_.subscribe("desired_state",1,&Controller::desiredStateCallback,this);
     status_subscriber_       = nh_.subscribe("status",1,&Controller::statusCallback,this);
     is_flying_subcriber_     = nh_.subscribe("is_flying",1, &Controller::isflyingCallback,this);
@@ -72,6 +75,20 @@ namespace reef_control
 
   void Controller::computeCommand()
   {
+
+    // MAVROS additions by Adam, 8 Jul 2021
+    //
+    mavros_msgs::AttitudeTarget att_target;
+    att_target.type_mask = 3; //Bitmask set to use position vs rate
+
+    geometry_msgs::PoseStamped p;
+    double x = current_state_.pose.pose.orientation.x; //Current state is a class variable.
+    double y = current_state_.pose.pose.orientation.y;
+    double z = current_state_.pose.pose.orientation.z;
+
+
+    tf::Quaternion q;
+
     // Time calculation
     dt = (current_state_.header.stamp - time_of_previous_control_).toSec();
     time_of_previous_control_ = current_state_.header.stamp;
@@ -103,25 +120,39 @@ namespace reef_control
         theta_desired = 0;
     }
     */
-
     command.mode = rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
     command.F = std::min(std::max(thrust, 0.0), 1.0);
     if(!desired_state_.attitude_valid && !desired_state_.altitude_only) {
+      // ROS_WARN_STREAM("Coming into the right mode");
       command.ignore = 0x00;
+      //Roll command
       command.x = std::min(std::max(phi_desired, -1.0 * max_roll_), max_roll_);
+      //Pitch command
       command.y = std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_);
+      //Yaw-rate command
       command.z = std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_);
-    }else if(desired_state_.altitude_only)
-      command.ignore = 0x07;
-    else
-    {
-      command.ignore = 0x00;
-      command.x = desired_state_.attitude.x;
-      command.y = desired_state_.attitude.y;
-      command.z = desired_state_.attitude.yaw;
-    }
+
+        //Additions by Adam for MAVROS
+        q.setRPY(command.x, command.y, 0);
+        att_target.orientation.x = q.getX();
+        att_target.orientation.y = q.getY();
+        att_target.orientation.z = q.getZ();
+        att_target.orientation.w = q.getW();
+        att_target.body_rate.z = command.z;
+        att_target.thrust = command.F;
+
+        command.x*=57.3;
+        command.y*=57.3;
+        command.z*=57.3;
+
+  
+    }   
 
     command_publisher_.publish(command);
+    //
+    //Publish to attitude target
+    // ROS_INFO("Att publishing!");
+    attitude_publisher_.publish(att_target);
   }
 
 } //namespace

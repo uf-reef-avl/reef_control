@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosflight_msgs
   rospy
+  mavros_msgs
 )
 
 find_package(Eigen REQUIRED)
