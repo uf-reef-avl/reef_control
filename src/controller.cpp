@@ -78,8 +78,10 @@ namespace reef_control
 
     // MAVROS additions by Adam, 8 Jul 2021
     //
+
     mavros_msgs::AttitudeTarget att_target;
-    att_target.type_mask = 3; //Bitmask set to use position vs rate
+    att_target.header.stamp = current_state_.header.stamp;
+ att_target.type_mask = 3; //Bitmask set to use position vs rate
 
     geometry_msgs::PoseStamped p;
     double x = current_state_.pose.pose.orientation.x; //Current state is a class variable.
@@ -133,12 +135,12 @@ namespace reef_control
       command.z = std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_);
 
         //Additions by Adam for MAVROS
-        q.setRPY(command.x, command.y, 0);
+        q.setRPY(command.x, -command.y, 0);
         att_target.orientation.x = q.getX();
         att_target.orientation.y = q.getY();
         att_target.orientation.z = q.getZ();
         att_target.orientation.w = q.getW();
-        att_target.body_rate.z = command.z;
+        att_target.body_rate.z = -command.z;
         att_target.thrust = command.F;
 
         command.x*=57.3;
