@@ -18,6 +18,7 @@
 
 //Addition by Adam - 8 Jul 2021
 #include <mavros_msgs/AttitudeTarget.h>
+#include <mavros_msgs/State.h>
 #include <tf/tf.h>
 #include <tf/transform_datatypes.h>
 
@@ -54,6 +55,7 @@ namespace reef_control
     ros::Subscriber is_flying_subcriber_;
     ros::Subscriber pose_subcriber_;
     ros::Subscriber rc_in_subcriber_;
+    ros::Subscriber mavors_state_subscriber_;
 
     ros::Time time_of_previous_control_;
     rosflight_msgs::Command command;
@@ -78,6 +80,7 @@ namespace reef_control
     void isflyingCallback(const std_msgs::Bool& msg);
     void statusCallback(const rosflight_msgs::Status &msg);
     void RCInCallback(const rosflight_msgs::RCRaw &msg);
+    void stateCallback(const mavros_msgs::State &msg);
     void computeCommand();  // Computes and sends command message
 
     // Virtual Function

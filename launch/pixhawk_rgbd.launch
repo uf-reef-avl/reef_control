@@ -1,7 +1,7 @@
 <launch>
 
     <arg name="vehicle" default="penguin"/>
-    <arg name="vehicle_type" default="quad"/>
+    <arg name="vehicle_type" default="hex"/>
     <arg name="run_estimator" default="true"/>
     <arg name="run_rgbd" default="false"/>
 

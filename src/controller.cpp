@@ -28,7 +28,7 @@ namespace reef_control
     current_state_subcriber_ = nh_.subscribe("xyz_estimate", 1, &Controller::currentStateCallback,this);
     rc_in_subcriber_         = nh_.subscribe("rc_raw",1,&Controller::RCInCallback,this);
     pose_subcriber_          = nh_.subscribe("pose_stamped", 1, &Controller::poseCallback,this);
-
+    mavors_state_subscriber_ = nh_.subscribe("mavros/state", 1, &Controller::stateCallback, this);
     time_of_previous_control_ = ros::Time(0);
 
   }
@@ -62,6 +62,11 @@ namespace reef_control
     initialized_ = armed_;
   }
 
+  void Controller::stateCallback(const mavros_msgs::State &msg){
+
+    initialized_ = msg.armed;
+  }
+
   void Controller::isflyingCallback(const std_msgs::Bool &msg)
   {
     is_flying_ = msg.data;
@@ -78,10 +83,9 @@ namespace reef_control
 
     // MAVROS additions by Adam, 8 Jul 2021
     //
-
     mavros_msgs::AttitudeTarget att_target;
     att_target.header.stamp = current_state_.header.stamp;
- att_target.type_mask = 3; //Bitmask set to use position vs rate
+    att_target.type_mask = 3; //Bitmask set to use position vs rate
 
     geometry_msgs::PoseStamped p;
     double x = current_state_.pose.pose.orientation.x; //Current state is a class variable.
@@ -146,7 +150,8 @@ namespace reef_control
         command.x*=57.3;
         command.y*=57.3;
         command.z*=57.3;
-
+       ROS_WARN_STREAM("\nROLL Command \t" << command.x << "\nPITCH Command \t" << command.y << "\nYaw Command \t" << command.z
+        << "\nThrust Command \t" << command.F);
   
     }   
 
