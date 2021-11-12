@@ -1,7 +1,7 @@
 <launch>
     <arg name="vehicle" default="wren"/>
     <arg name="vehicle_type" default="quad"/>
-    <arg name="run_estimator" default="false"/>
+    <arg name="run_estimator" default="true"/>
 
     <arg name="record_bag" default="false"/>
     <arg name="bag_name" default="position_hold"/>
@@ -9,7 +9,7 @@
 
     <!--    Launches the ROSFlight node to interface with the Flip32 Board-->
     <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
-        <param name="port" value="/dev/ttyUSB0"/>
+        <param name="port" value="/dev/ttyACM0"/>
     </node>
 
     <!--    Runs the ROS VRPN Node to interface with the mocap system-->
@@ -24,6 +24,7 @@
         <param name="publish_tf" value="true"/>
         <param name="fixed_frame_id" value="mocap"/>
         <rosparam param="model_list">[]</rosparam>
+	<remap from="/qualisys/mech1/ned/pose" to="pose_stamped"/>
     </node>
 
     <!--    Loads the camera to mocap-marker calibration-->
@@ -48,10 +49,15 @@
             <!--		<remap from="odom" to="multirotor/truth/NED"/> -->
         </node>
     </group>
+    <node pkg="reef2_truth" type="node" name="reef_2_truth">
+        <rosparam file="$(find reef2_truth)/params/basic.yaml" />
+    </node>
 
     <!--    Runs the REEF Control node-->
     <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
-    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen">
+        <remap from="pose_stamped" to="xyz_pose"/>
+    </node>
 
     <arg name="waypoints_file" default="$(find setpoint_generator)/waypoint_files/basic_waypoints.yaml" />
     <node name="setpoint_publisher" pkg="setpoint_generator" type="get_setpoint_node.py" clear_params="true" output="screen">
