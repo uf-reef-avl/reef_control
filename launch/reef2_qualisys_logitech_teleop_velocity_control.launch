@@ -1,0 +1,74 @@
+<launch>
+
+    <arg name="vehicle" default="wren"/>
+    <arg name="vehicle_type" default="quad"/>
+    <arg name="run_estimator" default="true"/>
+    <arg name="run_demo_rgbd" default="true"/>
+
+    <arg name="control_mode" value="velocity_altitude"/>
+    <arg name="record_bag" default="false"/>
+    <arg name="bag_name" default="velocity_control"/>
+
+    <!--    Launches the ROSFlight node to interface with the Flip32 Board-->
+    <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
+        <param name="port" value="/dev/ttyUSB0"/>
+    </node>
+
+    <!--    Launches the REEF teleop node to convert joystick commands to velocity command-->
+    <include file="$(find reef_teleop)/launch/logitech_controller.launch">
+        <arg name="control_mode" value="$(arg control_mode)"/>
+        <arg name="initial_z_cmd" value="-1.0"/>
+        <arg name="min_z_cmd" value="-3.0"/>
+        <arg name="max_z_cmd" value="0.0"/>
+        <arg name="invert_x" value="false"/>
+        <arg name="x_dot_max" default="2.00"/>
+        <arg name="y_dot_max" default="2.00"/>
+        <arg name="yawrate_max" default="1.57"/>
+    </include>
+
+    <!--    Loads the camera to mocap-marker calibration-->
+    <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
+
+    <!--    Runs the REEF estimator-->
+    <group if="$(arg run_estimator)">
+        <node name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
+            <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
+            <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
+            <rosparam file="$(find reef_estimator)/params/basic_params.yaml" />
+            <rosparam>
+                enable_rgbd: false
+                enable_sonar: false
+                enable_mocap_xy: true
+                enable_mocap_z: true
+            </rosparam>
+            <remap from="mocap_ned" to="pose_stamped"/>
+        </node>
+
+        <node name="delta_odom" pkg="delta_odom" type="node" output="screen" >
+            <rosparam command="load" file="$(find delta_odom)/params/basic.yaml" />
+            <!--		<remap from="odom" to="multirotor/truth/NED"/> -->
+        </node>
+    </group>
+
+    <!--    Runs the ROS VRPN Node to interface with the mocap system-->
+    <node pkg="mocap_qualisys"
+          type="mocap_qualisys_node"
+          name="qualisys"
+          output="screen">
+        <param name="server_address" value="192.168.2.238"/>
+        <param name="server_base_port" value="22222"/>
+        <param name="frame_rate" value="0"/>
+        <param name="max_accel" value="10.0"/>
+        <param name="publish_tf" value="true"/>
+        <param name="fixed_frame_id" value="mocap"/>
+        <rosparam param="model_list">[]</rosparam>
+        <remap from="/qualisys/mech1/ned/pose" to="pose_stamped"/>
+    </node>
+
+    <!--    Runs the REEF Control node-->
+    <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
+
+    <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
+
+</launch>
