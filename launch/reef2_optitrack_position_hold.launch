@@ -1,10 +1,9 @@
 <launch>
     <arg name="vehicle" default="auk"/>
     <arg name="vehicle_type" default="quad"/>
-    <arg name="run_estimator" default="false"/>
-    <arg name="run_qualisys" default="true"/>
+    <arg name="run_estimator" default="true"/>
 
-    <arg name="record_bag" default="false"/>
+    <arg name="record_bag" default="true"/>
     <arg name="bag_name" default="position_hold"/>
 
 
@@ -37,18 +36,20 @@
 
         <node name="delta_odom" pkg="delta_odom" type="node" output="screen" >
             <rosparam command="load" file="$(find delta_odom)/params/basic.yaml" />
-            <!--		<remap from="odom" to="multirotor/truth/NED"/> -->
         </node>
     </group>
 
     <!--    Runs the REEF Control node-->
     <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
-    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen">
+	<remap from="pose_stamped" to="xyz_pose"/>
+    </node>
 
-    <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
+    <arg name="waypoints_file" default="$(find setpoint_generator)/waypoint_files/basic_waypoints.yaml" />
+    <node name="setpoint_publisher" pkg="setpoint_generator" type="get_setpoint_node.py" clear_params="true" output="screen">
+        <rosparam file="$(arg waypoints_file)"/>
+        <rosparam file="$(find setpoint_generator)/params/basic_param.yaml"/>
+    </node>
 
-
-
-
-
+    <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_pose xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
 </launch>
