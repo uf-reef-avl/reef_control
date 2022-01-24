@@ -9,8 +9,8 @@ reef_control_pid: {
     xIntegrator: 1,
     uIntegrator: 1,
 
-    max_roll: 0.25,
-    max_pitch: 0.25,
+    max_roll: 0.17,
+    max_pitch: 0.17,
     max_yaw_rate: 2.0,
     max_u: 1.0,
     max_v: 1.0,
