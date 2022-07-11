@@ -22,6 +22,7 @@ namespace reef_control
     ROS_INFO("New v(PID):   %0.4f,%0.4f,%0.4f", config.vP,uIntegrator*config.vI,config.vD);
     ROS_INFO("New w(PID):   %0.4f,%0.4f,%0.4f", config.wP,uIntegrator*config.wI,config.wD);
     ROS_INFO("New YAW(PID): %0.4f,%0.4f,%0.4f", config.yawP,config.yawI,config.yawD);
+    ROS_INFO("New YAW(PID): %0.4f,%0.4f,%0.4f", config.yawP,config.yawI,config.yawD);
 
     kp = config.kp;
     deadzone = config.deadzone;
@@ -55,8 +56,8 @@ namespace reef_control
     }
 
     current_yaw = reef_msgs::get_yaw(current_state_.pose.pose.orientation);
-    desired_state.velocity.z = d_.computePID(desired_state.pose.z, current_state_.pose.pose.position.z, dt);
-    desired_state.acceleration.z = w_.computePID(desired_state.velocity.z, current_state_.twist.twist.linear.z, dt);
+    //desired_state.velocity.z = d_.computePID(desired_state.pose.z, current_state_.pose.pose.position.z, dt);
+    desired_state.acceleration.z = w_.computePID(-1, current_state_.twist.twist.linear.z, dt);
 
     if(desired_state.position_valid)
     {
