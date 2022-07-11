@@ -1,0 +1,74 @@
+<launch>
+    <arg name="vehicle" default="wren"/>
+    <arg name="vehicle_type" default="quad"/>
+    <arg name="run_estimator" default="true"/>
+
+    <arg name="record_bag" default="false"/>
+    <arg name="bag_name" default="position_hold"/>
+
+
+    <!--    Launches the ROSFlight node to interface with the Flip32 Board-->
+    <node name="rosflight" pkg="rosflight" type="rosflight_io" output="screen">
+        <param name="port" value="/dev/ttyACM0"/>
+    </node>
+
+    <!--    Runs the ROS VRPN Node to interface with the mocap system-->
+    <node pkg="mocap_qualisys"
+          type="mocap_qualisys_node"
+          name="qualisys"
+          output="screen">
+        <param name="server_address" value="192.168.2.238"/>
+        <param name="server_base_port" value="22222"/>
+        <param name="frame_rate" value="0"/>
+        <param name="max_accel" value="10.0"/>
+        <param name="publish_tf" value="true"/>
+        <param name="fixed_frame_id" value="mocap"/>
+        <rosparam param="model_list">[]</rosparam>
+	<remap from="/qualisys/mech1/ned/pose" to="pose_stamped"/>
+    </node>
+
+    <!--    Loads the camera to mocap-marker calibration-->
+    <rosparam command="load" file="$(find reef_estimator)/params/$(arg vehicle)_camera.yaml" />
+
+    <group if="$(arg run_estimator)">
+        <node name="reef_estimator" pkg="reef_estimator" type="reef_estimator" output="screen">
+            <rosparam file="$(find reef_estimator)/params/xy_est_params.yaml" />
+            <rosparam file="$(find reef_estimator)/params/z_est_params.yaml" />
+            <rosparam file="$(find reef_estimator)/params/basic_params.yaml" />
+            <rosparam>
+                enable_rgbd: false
+                enable_sonar: false
+                enable_mocap_xy: true
+                enable_mocap_z: true
+            </rosparam>
+            <remap from="mocap_ned" to="pose_stamped"/>
+        </node>
+
+        <node name="delta_odom" pkg="delta_odom" type="node" output="screen" >
+            <rosparam command="load" file="$(find delta_odom)/params/basic.yaml" />
+            <!--		<remap from="odom" to="multirotor/truth/NED"/> -->
+        </node>
+    </group>
+    <node pkg="reef2_truth" type="node" name="reef_2_truth">
+        <rosparam file="$(find reef2_truth)/params/basic.yaml" />
+    </node>
+
+    <!--    Runs the REEF Control node-->
+    <rosparam file="$(find reef_control)/params/$(arg vehicle_type)_pid.yaml" />
+    <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen">
+        <remap from="pose_stamped" to="xyz_pose"/>
+    </node>
+
+    <arg name="waypoints_file" default="$(find setpoint_generator)/waypoint_files/basic_waypoints.yaml" />
+    <node name="setpoint_publisher" pkg="setpoint_generator" type="get_setpoint_node.py" clear_params="true" output="screen">
+        <rosparam file="$(arg waypoints_file)"/>
+        <rosparam file="$(find setpoint_generator)/params/basic_param.yaml"/>
+    </node>
+
+    <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) cam_to_init attitude attitude/euler rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state xyz_debug_estimate rgbd_velocity/body_level_frame"/>
+
+
+
+
+
+</launch>

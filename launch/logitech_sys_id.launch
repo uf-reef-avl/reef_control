@@ -56,5 +56,5 @@
     <rosparam file="$(find reef_control)/params/$(arg vehicle)_pid.yaml"/>
     <node name="reef_control_pid" pkg="reef_control" type="reef_control_node" output="screen"/>
 
-  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) attitude attitude/euler command rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state"/>
+  <node if="$(arg record_bag)" name="record" pkg="rosbag" type="record" args="-O $(arg bag_name) rc_raw output_raw total_torque attitude attitude/euler command rc_raw imu/data sonar status pose_stamped xyz_debug_estimate xyz_estimate velocity/body_level_frame controller_state"/>
 </launch>
