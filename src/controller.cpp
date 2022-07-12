@@ -139,9 +139,9 @@ namespace reef_control
   Eigen::Quaterniond Controller::rpyToQuat(const double &roll, const double &pitch, const double &yaw)
   {
     return Eigen::Quaterniond(
-    Eigen::AngleAxisd(-z, Eigen::Vector3d::UnitZ()) *
-    Eigen::AngleAxisd(-y, Eigen::Vector3d::UnitY()) *
-    Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX()));
+    Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
         
   }
 } //namespace
