@@ -39,14 +39,14 @@ The reef control node subscribes the following topics:
  * /desired_state [reef_msgs/DesiredState]* - Contains the desired states for the controller
  * /is_flying [std_msgs/Bool]* - Tells if the quad is flying. Helps set the *initialized* flag
  * /pose_stamped [geometry_msgs/PoseStamped] - Position estimates (ideally from a motion capture system)
- * /rc_raw [rosflight_msgs/RCRaw] - RC Messages, used to switch between modes.
- * /status [rosflight_msgs/Status]* - Status of flight controller to tell if the vehicle is armed
+ * /rc_raw [mavros_msgs/OverrideRcIn] - RC Messages, used to switch between modes.
+ * /status [mavros_msgs/State]* - Status of flight controller to tell if the vehicle is armed
  * /xyz_estimate [reef_msgs/XYZEstimate]* - Estimates used to get Z and XY Velocity estimates
  
  **Topics denoted with a ```*``` are requred. All others are optional.**
 
 The node publishes the following messages:
-* /command [rosflight_msgs/Command] - Desired attitude commands
+* /setpoint_raw/attitude[mavros_msgs/AttitudeTarget] - Desired attitude commands
 * /controller_state [reef_msgs/DesiredState] - Internal results of the PID loops
 
 There are two other topics from the dynamic reconfigure package which are not relevant. 

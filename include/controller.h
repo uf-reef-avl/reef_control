@@ -3,12 +3,13 @@
 
 #include <ros/ros.h>
 
-#include <rosflight_msgs/Command.h>
-#include <rosflight_msgs/Status.h>
-#include <rosflight_msgs/RCRaw.h>
+#include <mavros_msgs/State.h>
+#include <mavros_msgs/OverrideRCIn.h>
+#include <mavros_msgs/AttitudeTarget.h>
 
 #include <math.h>
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 
 #include <reef_msgs/XYZEstimate.h>
 #include <reef_msgs/DesiredState.h>
@@ -39,8 +40,7 @@ namespace reef_control
     nav_msgs::Odometry current_state_;
     reef_msgs::DesiredState desired_state_;
 
-    ros::Publisher command_publisher_;
-
+    ros::Publisher setpoint_attitude_pub_;
     ros::Subscriber status_subscriber_;
     ros::Subscriber current_state_subcriber_;
     ros::Subscriber desired_state_subcriber_;
@@ -49,7 +49,7 @@ namespace reef_control
     ros::Subscriber rc_in_subcriber_;
 
     ros::Time time_of_previous_control_;
-    rosflight_msgs::Command command;
+    mavros_msgs::AttitudeTarget command;
 
     double mass_;
     double gravity_;
@@ -64,13 +64,19 @@ namespace reef_control
     double theta_desired;
 
     Eigen::Vector3d accel_out;
+    Eigen::Quaterniond orient_out;
+    const Eigen::Quaterniond rot_q = Eigen::Quaterniond(0, sqrt(2)/2, sqrt(2)/2, 0);
+
+
+
+    Eigen::Quaterniond rpyToQuat(const double &roll, const double &pitch, const double &yaw);
 
     void currentStateCallback(const reef_msgs::XYZEstimate& msg);
     void desiredStateCallback(const reef_msgs::DesiredState& msg);
     void poseCallback(const geometry_msgs::PoseStamped& msg);
     void isflyingCallback(const std_msgs::Bool& msg);
-    void statusCallback(const rosflight_msgs::Status &msg);
-    void RCInCallback(const rosflight_msgs::RCRaw &msg);
+    void statusCallback(const mavros_msgs::State &msg);
+    void RCInCallback(const mavros_msgs::OverrideRCIn &msg);
     void computeCommand();  // Computes and sends command message
 
     // Virtual Function

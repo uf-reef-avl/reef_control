@@ -17,7 +17,10 @@ namespace reef_control
     ROS_ASSERT_MSG(nh_private_.getParam("max_roll", max_roll_), "[rotor_controller] - missing parameters");
     ROS_ASSERT(nh_private_.getParam("max_pitch", max_pitch_));
     ROS_ASSERT(nh_private_.getParam("max_yaw_rate", max_yaw_rate_));
-    command_publisher_       = nh_.advertise<rosflight_msgs::Command>("command", 1);
+    ROS_ASSERT(nh_private_.getParam("hover_throttle", hover_throttle_));
+    ROS_ERROR("hover_throttle = %f", hover_throttle_);
+
+    setpoint_attitude_pub_       = nh_.advertise<mavros_msgs::AttitudeTarget>("setpoint_raw/attitude", 1);
 
     desired_state_subcriber_ = nh_.subscribe("desired_state",1,&Controller::desiredStateCallback,this);
     status_subscriber_       = nh_.subscribe("status",1,&Controller::statusCallback,this);
@@ -47,13 +50,12 @@ namespace reef_control
 
   void Controller::poseCallback(const geometry_msgs::PoseStamped& msg)
   {
-    current_state_.pose.pose.position.x = msg.pose.position.x;
-    current_state_.pose.pose.position.y = msg.pose.position.y;
+    current_state_.pose.pose.position = msg.pose.position;
     current_state_.pose.pose.orientation = msg.pose.orientation;
 
   }
 
-  void Controller::statusCallback(const rosflight_msgs::Status &msg)
+  void Controller::statusCallback(const mavros_msgs::State &msg)
   {
     armed_ = msg.armed;
     initialized_ = armed_;
@@ -65,7 +67,7 @@ namespace reef_control
     initialized_ = is_flying_ && armed_;
   }
 
-  void Controller::RCInCallback(const rosflight_msgs::RCRaw &msg)
+  void Controller::RCInCallback(const mavros_msgs::OverrideRCIn &msg)
   {
 
   }
@@ -104,24 +106,42 @@ namespace reef_control
     }
     */
 
-    command.mode = rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-    command.F = std::min(std::max(thrust, 0.0), 1.0);
+    command.type_mask = mavros_msgs::AttitudeTarget::IGNORE_ROLL_RATE |
+                        mavros_msgs::AttitudeTarget::IGNORE_PITCH_RATE |
+                        mavros_msgs::AttitudeTarget::IGNORE_YAW_RATE;
+    command.thrust = std::min(std::max(thrust, 0.0), 1.0);
+
     if(!desired_state_.attitude_valid && !desired_state_.altitude_only) {
-      command.ignore = 0x00;
-      command.x = std::min(std::max(phi_desired, -1.0 * max_roll_), max_roll_);
-      command.y = std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_);
-      command.z = std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_);
+      orient_out = rpyToQuat(std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_), 
+                std::min(std::max(phi_desired, -1.0 * max_roll_), max_roll_),
+                -std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_));
+      command.orientation.x = orient_out.x();
+      command.orientation.y = orient_out.y();
+      command.orientation.z = orient_out.z();
+      command.orientation.w = orient_out.w();
+
     }else if(desired_state_.altitude_only)
-      command.ignore = 0x07;
+      command.type_mask = command.type_mask | mavros_msgs::AttitudeTarget::IGNORE_ATTITUDE;
     else
     {
-      command.ignore = 0x00;
-      command.x = desired_state_.attitude.x;
-      command.y = desired_state_.attitude.y;
-      command.z = desired_state_.attitude.yaw;
+      orient_out = rpyToQuat(theta_desired,
+                             phi_desired,
+                             0);
+      command.orientation.x = orient_out.x();
+      command.orientation.y = orient_out.y();
+      command.orientation.z = orient_out.z();
+      command.orientation.w = orient_out.w();
     }
 
-    command_publisher_.publish(command);
+    setpoint_attitude_pub_.publish(command);
   }
 
+  Eigen::Quaterniond Controller::rpyToQuat(const double &roll, const double &pitch, const double &yaw)
+  {
+    return Eigen::Quaterniond(
+    Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
+        
+  }
 } //namespace

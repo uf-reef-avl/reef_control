@@ -22,6 +22,7 @@ namespace reef_control
     ROS_INFO("New v(PID):   %0.4f,%0.4f,%0.4f", config.vP,uIntegrator*config.vI,config.vD);
     ROS_INFO("New w(PID):   %0.4f,%0.4f,%0.4f", config.wP,uIntegrator*config.wI,config.wD);
     ROS_INFO("New YAW(PID): %0.4f,%0.4f,%0.4f", config.yawP,config.yawI,config.yawD);
+    ROS_INFO("New YAW(PID): %0.4f,%0.4f,%0.4f", config.yawP,config.yawI,config.yawD);
 
     kp = config.kp;
     deadzone = config.deadzone;

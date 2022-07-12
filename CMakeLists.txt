@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   reef_msgs
   roscpp
-  rosflight_msgs
+  mavros_msgs
   rospy
 )
 
