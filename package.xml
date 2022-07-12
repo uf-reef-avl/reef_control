@@ -54,21 +54,21 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>reef_msgs</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>rosflight_msgs</build_depend>
+  <build_depend>mavros_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_export_depend>cmake_modules</build_export_depend>
   <build_export_depend>dynamic_reconfigure</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>reef_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rosflight_msgs</build_export_depend>
+  <build_export_depend>mavros_msgs</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>cmake_modules</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>reef_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
-  <exec_depend>rosflight_msgs</exec_depend>
+  <exec_depend>mavros_msgs</exec_depend>
   <exec_depend>rospy</exec_depend>
 
 

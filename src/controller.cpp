@@ -50,8 +50,7 @@ namespace reef_control
 
   void Controller::poseCallback(const geometry_msgs::PoseStamped& msg)
   {
-    current_state_.pose.pose.position.x = msg.pose.position.x;
-    current_state_.pose.pose.position.y = msg.pose.position.y;
+    current_state_.pose.pose.position = msg.pose.position;
     current_state_.pose.pose.orientation = msg.pose.orientation;
 
   }
@@ -113,37 +112,36 @@ namespace reef_control
     command.thrust = std::min(std::max(thrust, 0.0), 1.0);
 
     if(!desired_state_.attitude_valid && !desired_state_.altitude_only) {
-      orient_out = rpyToQuat(std::min(std::max(phi_desired, -1.0 * max_roll_), max_roll_),
-                std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_), 
-                std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_));
+      orient_out = rpyToQuat(std::min(std::max(theta_desired, -1.0 * max_pitch_), max_pitch_), 
+                std::min(std::max(phi_desired, -1.0 * max_roll_), max_roll_),
+                -std::min(std::max(desired_state_.velocity.yaw, -1.0 * max_yaw_rate_), max_yaw_rate_));
       command.orientation.x = orient_out.x();
-      command.orientation.y = -orient_out.y();
-      command.orientation.z = -orient_out.z();
+      command.orientation.y = orient_out.y();
+      command.orientation.z = orient_out.z();
       command.orientation.w = orient_out.w();
 
     }else if(desired_state_.altitude_only)
       command.type_mask = command.type_mask | mavros_msgs::AttitudeTarget::IGNORE_ATTITUDE;
     else
     {
-      orient_out = rpyToQuat(desired_state_.attitude.x,
-                             desired_state_.attitude.y,
-                             desired_state_.attitude.yaw);
+      orient_out = rpyToQuat(theta_desired,
+                             phi_desired,
+                             0);
       command.orientation.x = orient_out.x();
-      command.orientation.y = -orient_out.y();
-      command.orientation.z = -orient_out.z();
+      command.orientation.y = orient_out.y();
+      command.orientation.z = orient_out.z();
       command.orientation.w = orient_out.w();
     }
 
     setpoint_attitude_pub_.publish(command);
   }
 
-  Eigen::Quaterniond Controller::rpyToQuat(const double &x, const double &y, const double &z)
+  Eigen::Quaterniond Controller::rpyToQuat(const double &roll, const double &pitch, const double &yaw)
   {
-    // Converts from Roll-Pitch-Yaw to FLU Quat
     return Eigen::Quaterniond(
-    Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX()) *
-    Eigen::AngleAxisd(y, Eigen::Vector3d::UnitY()) *
-    Eigen::AngleAxisd(z, Eigen::Vector3d::UnitZ()));
+    Eigen::AngleAxisd(-z, Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxisd(-y, Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX()));
         
   }
 } //namespace

@@ -56,8 +56,8 @@ namespace reef_control
     }
 
     current_yaw = reef_msgs::get_yaw(current_state_.pose.pose.orientation);
-    //desired_state.velocity.z = d_.computePID(desired_state.pose.z, current_state_.pose.pose.position.z, dt);
-    desired_state.acceleration.z = w_.computePID(-1, current_state_.twist.twist.linear.z, dt);
+    desired_state.velocity.z = d_.computePID(desired_state.pose.z, current_state_.pose.pose.position.z, dt);
+    desired_state.acceleration.z = w_.computePID(desired_state.velocity.z, current_state_.twist.twist.linear.z, dt);
 
     if(desired_state.position_valid)
     {
